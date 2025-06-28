@@ -1,0 +1,25 @@
+# Build output
+dist/
+lib/
+esm/
+cjs/
+types/
+
+# Development
+*.tsbuildinfo
+.rollup.cache/
+
+# Testing
+coverage/
+
+# Storybook
+storybook-static/
+
+# Local development
+.env.local
+*.local
+
+# Cache
+.cache/
+.rts2_cache*/
+.rpt2_cache*/ 
