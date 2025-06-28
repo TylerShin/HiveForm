@@ -1,0 +1,226 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+HiveForm 프로젝트 개발 가이드
+Product Requirements Document (PRD) & Development Rules
+
+📋 프로젝트 개요
+프로젝트 명
+HiveForm - 바텀업 아토믹 React 폼 라이브러리
+
+프로젝트 비전
+벌집처럼 작은 셀(필드)을 모아 견고한 폼을 자동 생성하는 차세대 React 폼 라이브러리
+
+슬로건
+"작은 셀이 모여, 완벽한 폼을 짓다"
+
+🎯 핵심 목표
+주요 문제 해결
+수동 폼 구성의 번거로움: 각 폼마다 반복적인 보일러플레이트 코드 작성
+
+타입 안전성 부족: 런타임에서 발견되는 폼 관련 오류
+
+성능 최적화 어려움: 필드 변경 시 전체 폼 리렌더링 문제
+
+유지보수의 복잡성: 폼 구조 변경 시 여러 파일 수정 필요
+
+핵심 가치 제안
+자동화된 폼 생성: AST 분석을 통한 빌드 타임 코드 생성
+
+아토믹 설계: 작은 필드 컴포넌트의 조합으로 복잡한 폼 구성
+
+최적화된 성능: 필드별 선택적 리렌더링
+
+타입 안전성: TypeScript와 Zod 완벽 통합
+
+🏗️ 기술 아키텍처
+UI 프레임워크	React 18+	Concurrent Features 활용
+시스템 구성
+text
+HiveForm Architecture:
+┌─ 빌드 타임 ─┐    ┌─ 런타임 ─┐
+│ AST 분석     │───▶│ 아토믹   │
+│ 코드 생성    │    │ 컴포넌트 │
+│ 타입 생성    │    │ 상태관리 │
+└────────────┘    └─────────┘
+🔧 핵심 기능 명세
+1. 바텀업 아토믹 구조
+typescript
+// Atoms (원자): 개별 필드 컴포넌트
+<Field name="email" type="email" />
+<Field name="password" type="password" />
+
+// Molecules (분자): 필드 조합
+<FieldGroup>
+  <Field name="firstName" />
+  <Field name="lastName" />
+</FieldGroup>
+
+// Organisms (유기체): 완전한 폼
+<FormProvider>
+  {/* 자동 생성된 폼 구조 */}
+</FormProvider>
+2. 자동 폼 생성 시스템
+typescript
+// 개발자가 작성하는 코드
+<FormProvider context="user-registration">
+  <Field name="email" validator={z.string().email()} />
+  <Field name="password" validator={z.string().min(8)} />
+  <Field name="confirmPassword" />
+</FormProvider>
+
+// 자동 생성되는 파일: generated/user-registration-form.ts
+export interface UserRegistrationForm {
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
+export const userRegistrationSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+  confirmPassword: z.string()
+});
+3. 상태 관리 시스템
+dirty: 필드 수정 여부 추적
+
+touched: 필드 포커스 이력 관리
+
+errors: 실시간 유효성 검증 결과
+
+values: 폼 데이터 중앙 저장소
+
+4. 성능 최적화
+typescript
+// 필드별 메모이제이션
+const MemoizedField = React.memo(Field, (prev, next) => {
+  return prev.value === next.value && prev.error === next.error;
+});
+
+// 선택적 리렌더링
+const useFieldSelector = (name: string) => {
+  return useFormStore(state => ({
+    value: state.values[name],
+    error: state.errors[name]
+  }), shallow);
+};
+📱 사용 예시
+기본 사용법
+typescript
+import { FormProvider, Field, useForm } from 'hiveform';
+import { z } from 'zod';
+
+function LoginForm() {
+  const form = useForm({
+    defaultValues: {
+      email: '',
+      password: ''
+    }
+  });
+
+  return (
+    <FormProvider form={form}>
+      <Field 
+        name="email" 
+        type="email"
+        validator={z.string().email()}
+        placeholder="이메일을 입력하세요"
+      />
+      <Field 
+        name="password" 
+        type="password"
+        validator={z.string().min(6)}
+        placeholder="비밀번호를 입력하세요"
+      />
+      <button type="submit">로그인</button>
+    </FormProvider>
+  );
+}
+자동 생성된 폼 사용
+typescript
+// 빌드 타임에 자동 생성됨
+import { GeneratedUserForm } from './generated/user-form';
+
+function UserRegistration() {
+  return <GeneratedUserForm onSubmit={handleSubmit} />;
+}
+🏃‍♂️ 개발 로드맵 (16주)
+Phase 1: 기반 구축 (1-4주)
+ 모노레포 환경 설정 (Bun + Rslib)
+
+ 핵심 타입 정의 및 인터페이스 설계
+
+ 기본 Field 컴포넌트 구현
+
+ FormProvider 및 상태 관리 시스템
+
+Phase 2: 아토믹 시스템 (5-8주)
+ 다양한 필드 타입 구현 (text, email, password, select 등)
+
+ 메모이제이션 및 성능 최적화
+
+ Zod 통합 및 유효성 검증
+
+ 상태 관리 (dirty, touched, errors)
+
+Phase 3: 빌드 타임 분석 (9-12주)
+ Oxc 기반 AST 파서 구현
+
+ FormProvider 영역 자동 감지
+
+ 필드 정보 추출 및 분석
+
+ TypeScript 타입 정의 자동 생성
+
+Phase 4: 코드 생성 시스템 (13-16주)
+ 폼 컴포넌트 자동 생성
+
+ Zod 스키마 자동 생성
+
+ 번들링 및 최적화
+
+ 문서화 및 배포 준비
+
+# 개발 모드 실행
+bun run dev
+
+# 라이브러리 빌드
+bun run build
+
+📊 성공 지표
+개발 지표
+빌드 시간: 기존 대비 50% 단축
+
+번들 크기: Tree-shaking으로 사용하지 않는 컴포넌트 제거
+
+타입 안전성: 컴파일 타임 에러 100% 포착
+
+사용성 지표
+개발자 생산성: 폼 개발 시간 70% 단축
+
+코드 일관성: 자동 생성으로 일관된 폼 구조 보장
+
+유지보수성: 필드 추가/수정 시 단일 파일만 수정
+
+⚠️ 주의사항 및 제약사항
+기술적 제약
+React 18+ 필수 (Concurrent Features 활용)
+
+TypeScript 5.0+ 필수 (최신 타입 기능 활용)
+
+빌드 타임 코드 생성으로 인한 초기 빌드 시간 증가
+
+개발 고려사항
+AST 분석 성능 최적화 필요
+
+복잡한 폼 구조에서의 타입 추론 한계
+
+다양한 번들러와의 호환성 확보
+
+📚 참고 자료
+핵심 개념
+Atomic Design Methodology(https://atomicdesign.bradfrost.com/)
+Bottom-up Development Approach(https://prepinsta.com/software-engineering/bottom-up-approach/)
+
