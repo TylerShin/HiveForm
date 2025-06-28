@@ -32,7 +32,9 @@ describe('parser', () => {
     const rootFilePath = path.resolve(__dirname, 'fixtures/multi-file/RootComponent.tsx');
     const fieldNames = findFieldsInHiveForm(rootFilePath);
 
-    expect(fieldNames).toHaveLength(4);
-    expect(fieldNames).toEqual(expect.arrayContaining(['username', 'email', 'address', 'consent']));
+    expect(fieldNames).toHaveLength(5);
+    expect(fieldNames).toEqual(
+      expect.arrayContaining(['username', 'email', 'address', 'consent', 'preferences'])
+    );
   });
 });
