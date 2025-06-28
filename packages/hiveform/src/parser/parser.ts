@@ -1,38 +1,61 @@
+import { type Node, Project, SyntaxKind } from 'ts-morph';
+import { findCustomComponentTags, findJsxTagElements, getAttributeValue } from './utils/jsxUtils';
 
-import { Project, SyntaxKind, JsxElement } from 'ts-morph';
-import { findJsxTag } from './utils/jsxUtils';
+function findFieldsRecursive(
+  startNode: Node,
+  project: Project,
+  visitedComponents: Set<string>
+): string[] {
+  const fieldNames: string[] = [];
 
-export function findFieldsInHiveForm(sourceCode: string): string[] {
+  const fieldElements = findJsxTagElements(startNode, 'Field');
+  for (const fieldElement of fieldElements) {
+    const nameValue = getAttributeValue(
+      fieldElement.isKind(SyntaxKind.JsxElement) ? fieldElement.getOpeningElement() : fieldElement,
+      'name'
+    );
+    if (nameValue) {
+      fieldNames.push(nameValue);
+    }
+  }
+
+  const customComponentTags = findCustomComponentTags(startNode, ['HiveForm', 'Field']);
+
+  for (const tagName of customComponentTags) {
+    const tagNameText = tagName.getText();
+    if (visitedComponents.has(tagNameText)) {
+      continue;
+    }
+    visitedComponents.add(tagNameText);
+
+    for (const definition of tagName.getDefinitionNodes()) {
+      fieldNames.push(...findFieldsRecursive(definition, project, visitedComponents));
+    }
+  }
+
+  return fieldNames;
+}
+
+export function findFieldsInHiveForm(filePath: string): string[] {
   const project = new Project({
-    useInMemoryFileSystem: true,
     compilerOptions: {
       jsx: 4, // JsxEmit.ReactJSX
     },
   });
 
-  const sourceFile = project.createSourceFile('temp.tsx', sourceCode);
+  const sourceFile = project.addSourceFileAtPath(filePath);
+  project.resolveSourceFileDependencies();
+
+  const visitedComponents = new Set<string>();
   const fieldNames: string[] = [];
 
-  const hiveFormElements = sourceFile.getDescendantsOfKind(SyntaxKind.JsxElement)
-    .filter(element => {
-        const openingElement = element.getOpeningElement();
-        return openingElement.getTagNameNode().getText() === 'HiveForm';
-    });
+  const hiveFormElements = findJsxTagElements(sourceFile, 'HiveForm');
 
-  hiveFormElements.forEach(hiveFormElement => {
-    const fieldElements = findJsxTag(hiveFormElement, 'Field');
-    fieldElements.forEach(fieldElement => {
-      const nameAttribute = fieldElement.getAttribute('name');
-      if (nameAttribute) {
-        const nameValue = nameAttribute.getDescendantsOfKind(SyntaxKind.StringLiteral)[0]?.getLiteralValue();
-        if (nameValue) {
-          fieldNames.push(nameValue);
-        }
-      }
-    });
-  });
+  for (const hiveFormElement of hiveFormElements) {
+    fieldNames.push(...findFieldsRecursive(hiveFormElement, project, visitedComponents));
+  }
 
-  return fieldNames;
+  return [...new Set(fieldNames)];
 }
 
 export function generateTypeDefinition(interfaceName: string, fields: string[]): string {
