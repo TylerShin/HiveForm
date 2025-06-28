@@ -118,3 +118,7 @@ Thumbs.db
 
 # Local development
 *.local
+
+# mise
+.mise
+mise.toml
