@@ -1,3 +1,4 @@
+import { pascalCase } from 'es-toolkit';
 import { type Node, Project, SyntaxKind } from 'ts-morph';
 import { findCustomComponentTags, findJsxTagElements, getAttributeValue } from './utils/jsxUtils';
 
@@ -36,7 +37,7 @@ function findFieldsRecursive(
   return fieldNames;
 }
 
-export function findFieldsInHiveForm(filePath: string): string[] {
+export function findFieldsInHiveForm(filePath: string): Record<string, string[]> {
   const project = new Project({
     compilerOptions: {
       jsx: 4, // JsxEmit.ReactJSX
@@ -46,19 +47,41 @@ export function findFieldsInHiveForm(filePath: string): string[] {
   const sourceFile = project.addSourceFileAtPath(filePath);
   project.resolveSourceFileDependencies();
 
-  const visitedComponents = new Set<string>();
-  const fieldNames: string[] = [];
+  const forms: Record<string, string[]> = {};
 
   const hiveFormElements = findJsxTagElements(sourceFile, 'HiveForm');
 
   for (const hiveFormElement of hiveFormElements) {
-    fieldNames.push(...findFieldsRecursive(hiveFormElement, project, visitedComponents));
+    const contextAttr = getAttributeValue(
+      hiveFormElement.isKind(SyntaxKind.JsxElement)
+        ? hiveFormElement.getOpeningElement()
+        : hiveFormElement,
+      'context'
+    );
+    const context = contextAttr || 'default';
+
+    if (!forms[context]) {
+      forms[context] = [];
+    }
+    const visitedComponents = new Set<string>();
+    const fields = findFieldsRecursive(hiveFormElement, project, visitedComponents);
+    forms[context].push(...fields);
   }
 
-  return [...new Set(fieldNames)];
+  // Deduplicate fields within each context
+  for (const context in forms) {
+    forms[context] = [...new Set(forms[context])];
+  }
+
+  return forms;
 }
 
-export function generateTypeDefinition(interfaceName: string, fields: string[]): string {
-  const properties = fields.map(field => `  ${field}: string;`).join('\n');
-  return `export interface ${interfaceName} {\n${properties}\n}`;
+export function generateTypeDefinitions(forms: Record<string, string[]>): string {
+  let typeDefinitions = '';
+  for (const context in forms) {
+    const interfaceName = `${pascalCase(context)}Form`;
+    const properties = forms[context].map(field => `  ${field}: string;`).join('\n');
+    typeDefinitions += `export interface ${interfaceName} {\n${properties}\n}\n\n`;
+  }
+  return typeDefinitions.trim();
 }

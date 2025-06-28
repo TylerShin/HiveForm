@@ -1,20 +1,30 @@
-import { Field } from '../../../components/Field';
-import { HiveForm } from '../../../components/HiveForm';
+import type React from 'react';
 
-export function TestComponentForParser() {
+declare const Field: React.FC<{ name: string }>;
+declare const HiveForm: React.FC<{
+  children: React.ReactNode;
+  context?: string;
+}>;
+
+const NestedComponent = () => (
+  <div>
+    <Field name="nested.field" />
+  </div>
+);
+
+const TestComponentForParser = () => {
   return (
-    <div>
-      <h1>Parser Test</h1>
-      <HiveForm context="user-profile">
+    <>
+      <HiveForm context="userProfile">
         <Field name="username" />
         <Field name="email" />
-        <div>
-          <Field name="nested.field" />
-        </div>
+        <NestedComponent />
       </HiveForm>
-      <HiveForm context="another-form">
+      <HiveForm>
         <Field name="address" />
       </HiveForm>
-    </div>
+    </>
   );
-}
+};
+
+export default TestComponentForParser;

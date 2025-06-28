@@ -1,39 +1,50 @@
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { findFieldsInHiveForm, generateTypeDefinition } from '../parser';
+import { findFieldsInHiveForm, generateTypeDefinitions } from '../parser';
 
 describe('parser', () => {
-  it('should find all Field components within HiveForm', async () => {
+  it('should group fields by their HiveForm context', async () => {
     const filePath = path.resolve(__dirname, 'fixtures/TestComponentForParser.tsx');
-    const fieldNames = findFieldsInHiveForm(filePath);
+    const forms = findFieldsInHiveForm(filePath);
 
-    expect(fieldNames).toEqual(['username', 'email', 'nested.field', 'address']);
+    expect(forms).toHaveProperty('userProfile');
+    expect(forms).toHaveProperty('default');
+    expect(forms.userProfile).toEqual(
+      expect.arrayContaining(['username', 'email', 'nested.field'])
+    );
+    expect(forms.default).toEqual(['address']);
   });
 
-  it('should generate a TypeScript interface definition from field names', () => {
-    const fields = ['username', 'email', 'password'];
-    const expectedInterface =
-      'export interface UserForm {\n  username: string;\n  email: string;\n  password: string;\n}';
-    const result = generateTypeDefinition('UserForm', fields);
-    expect(result).toBe(expectedInterface);
+  it('should generate multiple TypeScript interface definitions from contexts', () => {
+    const forms = {
+      userProfile: ['username', 'email'],
+      settings: ['theme', 'language'],
+    };
+    const expectedInterfaces =
+      'export interface UserProfileForm {\n  username: string;\n  email: string;\n}\n\n' +
+      'export interface SettingsForm {\n  theme: string;\n  language: string;\n}';
+    const result = generateTypeDefinitions(forms);
+    expect(result).toBe(expectedInterfaces);
   });
 
-  it('should generate an interface from a parsed component', async () => {
+  it('should generate interfaces from a parsed component with contexts', async () => {
     const filePath = path.resolve(__dirname, 'fixtures/TestComponentForParser.tsx');
-    const fieldNames = findFieldsInHiveForm(filePath);
-    const result = generateTypeDefinition('UserProfileForm', fieldNames);
+    const forms = findFieldsInHiveForm(filePath);
+    const result = generateTypeDefinitions(forms);
 
-    const expectedInterface =
-      'export interface UserProfileForm {\n  username: string;\n  email: string;\n  nested.field: string;\n  address: string;\n}';
-    expect(result).toBe(expectedInterface);
+    const expectedInterfaces =
+      'export interface UserProfileForm {\n  username: string;\n  email: string;\n  nested.field: string;\n}\n\n' +
+      'export interface DefaultForm {\n  address: string;\n}';
+    expect(result).toBe(expectedInterfaces);
   });
 
-  it('should find fields across multiple files from a root component', async () => {
+  it('should find fields across multiple files with context', async () => {
     const rootFilePath = path.resolve(__dirname, 'fixtures/multi-file/RootComponent.tsx');
-    const fieldNames = findFieldsInHiveForm(rootFilePath);
+    const forms = findFieldsInHiveForm(rootFilePath);
 
-    expect(fieldNames).toHaveLength(5);
-    expect(fieldNames).toEqual(
+    expect(forms).toHaveProperty('multiFileForm');
+    expect(forms.multiFileForm).toHaveLength(5);
+    expect(forms.multiFileForm).toEqual(
       expect.arrayContaining(['username', 'email', 'address', 'consent', 'preferences'])
     );
   });

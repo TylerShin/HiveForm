@@ -3,12 +3,12 @@ import { AddressFields } from './AddressFields';
 import { UserFields } from './UserFields';
 
 // These are dummy declarations for the sake of the parser test
-declare const HiveForm: React.FC<{ children: React.ReactNode }>;
+declare const HiveForm: React.FC<{ children: React.ReactNode; context?: string }>;
 declare const Field: React.FC<{ name: string }>;
 
 const RootComponent = () => {
   return (
-    <HiveForm>
+    <HiveForm context="multiFileForm">
       <UserFields />
       <AddressFields />
       <Field name="consent" />
