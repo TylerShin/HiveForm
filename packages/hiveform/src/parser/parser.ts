@@ -48,6 +48,7 @@ export function findFieldsInHiveForm(filePath: string): Record<string, string[]>
   project.resolveSourceFileDependencies();
 
   const forms: Record<string, string[]> = {};
+  let anonymousFormCounter = 1;
 
   const hiveFormElements = findJsxTagElements(sourceFile, 'HiveForm');
 
@@ -58,7 +59,7 @@ export function findFieldsInHiveForm(filePath: string): Record<string, string[]>
         : hiveFormElement,
       'context'
     );
-    const context = contextAttr || 'default';
+    const context = contextAttr || pascalCase(`hive-form-${anonymousFormCounter++}`);
 
     if (!forms[context]) {
       forms[context] = [];

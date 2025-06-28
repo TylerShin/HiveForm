@@ -23,6 +23,9 @@ const TestComponentForParser = () => {
       <HiveForm>
         <Field name="address" />
       </HiveForm>
+      <HiveForm>
+        <Field name="phoneNumber" />
+      </HiveForm>
     </>
   );
 };

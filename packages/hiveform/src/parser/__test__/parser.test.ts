@@ -8,11 +8,13 @@ describe('parser', () => {
     const forms = findFieldsInHiveForm(filePath);
 
     expect(forms).toHaveProperty('userProfile');
-    expect(forms).toHaveProperty('default');
+    expect(forms).toHaveProperty('HiveForm1');
+    expect(forms).toHaveProperty('HiveForm2');
     expect(forms.userProfile).toEqual(
       expect.arrayContaining(['username', 'email', 'nested.field'])
     );
-    expect(forms.default).toEqual(['address']);
+    expect(forms.HiveForm1).toEqual(['address']);
+    expect(forms.HiveForm2).toEqual(['phoneNumber']);
   });
 
   it('should generate multiple TypeScript interface definitions from contexts', () => {
@@ -34,7 +36,8 @@ describe('parser', () => {
 
     const expectedInterfaces =
       'export interface UserProfileForm {\n  username: string;\n  email: string;\n  nested.field: string;\n}\n\n' +
-      'export interface DefaultForm {\n  address: string;\n}';
+      'export interface HiveForm1Form {\n  address: string;\n}\n\n' +
+      'export interface HiveForm2Form {\n  phoneNumber: string;\n}';
     expect(result).toBe(expectedInterfaces);
   });
 
