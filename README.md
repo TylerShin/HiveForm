@@ -170,11 +170,13 @@ bun preview
 # Run tests
 bun test
 
-# Lint code
-bun lint
-
-# Type check
-bun type-check
+# Lint and format with Biome
+bun lint              # Check linting issues
+bun lint:fix          # Fix linting issues
+bun format            # Check formatting
+bun format:fix        # Fix formatting
+bun check             # Check both linting and formatting
+bun check:fix         # Fix both linting and formatting
 ```
 
 ### Development Workflow

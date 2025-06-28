@@ -9,9 +9,16 @@
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
-    "preview": "turbo preview"
+    "preview": "turbo preview",
+    "lint": "biome lint .",
+    "lint:fix": "biome lint --write .",
+    "format": "biome format .",
+    "format:fix": "biome format --write .",
+    "check": "biome check .",
+    "check:fix": "biome check --write ."
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.0.2",
     "bun": "1.2.17",
     "turbo": "^2.5.4"
   }
