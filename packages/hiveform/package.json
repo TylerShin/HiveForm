@@ -38,5 +38,8 @@
   "peerDependencies": {
     "react": ">=16.9.0",
     "react-dom": ">=16.9.0"
+  },
+  "dependencies": {
+    "es-toolkit": "^1.39.5"
   }
 }
