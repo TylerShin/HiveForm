@@ -1,6 +1,5 @@
-
+import { Field } from '../../../components/Field';
 import { HiveForm } from '../../../components/HiveForm';
-import { Field } from '../../../Field';
 
 export function TestComponentForParser() {
   return (

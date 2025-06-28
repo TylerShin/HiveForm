@@ -1,2 +1,3 @@
 export { Button } from './Button';
-export * from './parser/formDetector';
+export { Field } from './components/Field';
+export { HiveForm } from './components/HiveForm';

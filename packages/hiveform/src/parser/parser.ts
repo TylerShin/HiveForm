@@ -34,3 +34,8 @@ export function findFieldsInHiveForm(sourceCode: string): string[] {
 
   return fieldNames;
 }
+
+export function generateTypeDefinition(interfaceName: string, fields: string[]): string {
+  const properties = fields.map(field => `  ${field}: string;`).join('\n');
+  return `export interface ${interfaceName} {\n${properties}\n}`;
+}
