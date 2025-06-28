@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+1. 모든 comment, git commit message, source code comment, test code description 등 사용자가 읽을 수 있는 모든 글은 영어로 작성할 것.
