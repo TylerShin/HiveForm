@@ -1,11 +1,7 @@
 import { pascalCase } from 'es-toolkit';
 import { type Node, Project, SyntaxKind } from 'ts-morph';
+import type { FieldInfo } from '../generator';
 import { findJsxTagElements, getAttributeValue } from './utils/jsxUtils';
-
-type FieldInfo = {
-  name: string;
-  optional: boolean;
-};
 
 function processNodeWithContext(
   node: Node,
@@ -166,16 +162,4 @@ export function findFieldsInHiveForm(filePath: string): Record<string, FieldInfo
   }
 
   return forms;
-}
-
-export function generateTypeDefinitions(forms: Record<string, FieldInfo[]>): string {
-  let typeDefinitions = '';
-  for (const context in forms) {
-    const typeName = `${pascalCase(context)}Form`;
-    const properties = forms[context]
-      .map(field => `  ${field.name}${field.optional ? '?' : ''}: string;`)
-      .join('\n');
-    typeDefinitions += `export type ${typeName} = {\n${properties}\n};\n\n`;
-  }
-  return typeDefinitions.trim();
 }

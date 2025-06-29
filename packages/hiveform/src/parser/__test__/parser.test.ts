@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { findFieldsInHiveForm, generateTypeDefinitions } from '../parser';
+import { generateCompleteFormCode, generateTypeDefinitions } from '../../generator';
+import { findFieldsInHiveForm } from '../parser';
 
 describe('parser', () => {
   it('should group fields by their HiveForm context with optional information', async () => {
@@ -118,5 +119,40 @@ describe('parser', () => {
     );
     expect(anonymousFormKey).toBeDefined();
     expect(forms[anonymousFormKey!][0].name).toBe('anonymousField');
+  });
+
+  it('should generate complete form implementation with parsed data', async () => {
+    const filePath = path.resolve(__dirname, 'fixtures/TestComponentForParser.tsx');
+    const forms = findFieldsInHiveForm(filePath);
+
+    // Filter out OrphanFields for cleaner test
+    const filteredForms = { ...forms };
+    delete filteredForms.OrphanFields;
+
+    const result = generateCompleteFormCode(filteredForms);
+
+    console.log('--- Generated Complete Form Code ---');
+    console.log(result);
+    console.log('-----------------------------------');
+
+    // Check that it includes all necessary parts
+    expect(result).toContain("import { z } from 'zod';");
+    expect(result).toContain('export type UserProfileForm = {');
+    expect(result).toContain('export const userProfileSchema = z.object({');
+    expect(result).toContain('export const userProfileDefaultValues = {');
+    expect(result).toContain('export const userProfileConfig = {');
+
+    // Check schema validation
+    expect(result).toContain('username: z.string()');
+    expect(result).toContain('email: z.string().optional()');
+
+    // Check default values
+    expect(result).toContain("username: ''");
+    expect(result).toContain("email: ''");
+
+    // Check config structure
+    expect(result).toContain('type: {} as UserProfileForm,');
+    expect(result).toContain('schema: userProfileSchema,');
+    expect(result).toContain('defaultValues: userProfileDefaultValues,');
   });
 });
