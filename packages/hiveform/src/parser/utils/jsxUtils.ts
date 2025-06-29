@@ -53,3 +53,37 @@ export function getAttributeValue(
   }
   return undefined;
 }
+
+export function findAncestorHiveForm(
+  startNode: Node,
+  targetContext?: string
+): { element: JsxElement | JsxSelfClosingElement; context: string } | undefined {
+  let current = startNode.getParent();
+
+  while (current) {
+    if (
+      (current.isKind(SyntaxKind.JsxElement) || current.isKind(SyntaxKind.JsxSelfClosingElement)) &&
+      getTagNameNode(current).getText() === 'HiveForm'
+    ) {
+      const contextAttr = getAttributeValue(
+        current.isKind(SyntaxKind.JsxElement) ? current.getOpeningElement() : current,
+        'context'
+      );
+      const context = contextAttr || 'anonymous';
+
+      // If no target context specified, return the first HiveForm found
+      if (!targetContext) {
+        return { element: current, context };
+      }
+
+      // If target context specified, check if it matches
+      if (contextAttr === targetContext) {
+        return { element: current, context };
+      }
+    }
+
+    current = current.getParent();
+  }
+
+  return undefined;
+}
