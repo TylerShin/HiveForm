@@ -15,6 +15,7 @@ const App = () => {
           <Field name="password" />
           <Field name="confirmPassword" />
           <Field name="rememberMe" optional />
+          <Field name="deviceName" optional />
         </HiveForm>
       </div>
 
