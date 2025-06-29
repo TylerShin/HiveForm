@@ -6,6 +6,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./plugin": {
+      "types": "./dist/plugin.d.ts",
+      "import": "./dist/plugin.js"
     }
   },
   "types": "./dist/index.d.ts",
@@ -40,6 +44,8 @@
     "react-dom": ">=16.9.0"
   },
   "dependencies": {
-    "es-toolkit": "^1.39.5"
+    "@types/glob": "^8.1.0",
+    "es-toolkit": "^1.39.5",
+    "glob": "^11.0.3"
   }
 }
