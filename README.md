@@ -1,231 +1,351 @@
-# 🚀 HiveForm
+<h1 align="center">HiveForm</h1>
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
-[![Turborepo](https://img.shields.io/badge/Turborepo-EF4444?style=for-the-badge&logo=turborepo&logoColor=white)](https://turbo.build/)
-[![Bun](https://img.shields.io/badge/Bun-000000?style=for-the-badge&logo=bun&logoColor=white)](https://bun.sh/)
+<p align="center">
+  <strong>Build mighty forms, one cell at a time.</strong>
+  <br/>
+  A next-generation React library that revolutionizes form development with a bottom-up, atomic design and build-time code generation.
+</p>
 
-> **A bottom-up atomic form library for React with intelligent auto-generation and performance optimization**
+<p align="center">
+  <a href="https://www.typescriptlang.org/" target="_blank"><img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript"></a>
+  <a href="https://reactjs.org/" target="_blank"><img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React"></a>
+  <a href="https://turbo.build/" target="_blank"><img src="https://img.shields.io/badge/Turborepo-EF4444?style=for-the-badge&logo=turborepo&logoColor=white" alt="Turborepo"></a>
+  <a href="https://bun.sh/" target="_blank"><img src="https://img.shields.io/badge/Bun-000000?style=for-the-badge&logo=bun&logoColor=white" alt="Bun"></a>
+</p>
 
-HiveForm is a next-generation React form library that automatically discovers and generates form schemas from your component tree, providing type-safe validation, granular state management, and optimal rendering performance.
+---
 
-## ✨ Features
+## 🐝 What is HiveForm?
 
-### 🧩 **Atomic & Bottom-Up Architecture**
-- Build forms by composing atomic field components
-- Context-driven form discovery and auto-generation
-- Seamless integration across file boundaries
+HiveForm is a React form library born from a simple vision: **"Assemble robust forms from tiny, individual cells, just like a beehive."** 
+We break away from tedious, manual form setup by leveraging Abstract Syntax Tree (AST) analysis at build-time. This allows HiveForm to automatically generate boilerplate code, freeing you to focus on what truly matters: building great user experiences.
 
-### 🎯 **Intelligent Auto-Generation**
-- Automatically discovers fields within form contexts
-- Generates type-safe form schemas at build time
-- Zero configuration for basic use cases
+### 🎯 The Problem We Solve
 
-### 🛡️ **Type-Safe Validation**
-- Built-in support for popular validators (Zod, Yup, Joi)
-- Field-level and form-level validation
-- TypeScript-first with complete type inference
+Traditional form development is plagued by common frustrations:
+- **Manual Boilerplate**: Repetitive code for every form.
+- **Lack of Type Safety**: Form-related errors that only appear at runtime.
+- **Poor Performance**: Unnecessary re-renders of the entire form when a single field changes.
+- **Complex Maintenance**: The headache of updating multiple files for one small change in the form's structure.
 
-### ⚡ **Performance Optimized**
-- Granular re-rendering (only changed fields update)
-- Built-in memoization for field components
-- Selective state subscriptions
+### ✨ Our Core Values
 
-### 🎮 **Advanced State Management**
-- Track `dirty`, `touched`, `pristine` states
-- Field-level error handling
-- Form-level aggregated states
+- **Automated Form Generation**: Generate code at build-time through AST analysis.
+- **Atomic Design**: Compose complex forms from small, reusable field components.
+- **Optimized Performance**: Ensure peak performance with selective, field-level re-rendering.
+- **Total Type Safety**: Seamlessly integrate with TypeScript and Zod for end-to-end type safety.
+
+---
+
+## 🌟 Key Features
+
+<table>
+  <tr>
+    <td align="center" valign="top" width="50%">
+      <br/>
+      <strong>🧩 Atomic & Bottom-Up Architecture</strong>
+      <p align="left">Build forms by composing individual <code>&lt;Field&gt;</code> components within <code>&lt;HiveForm&gt;</code> containers. You focus on the small parts; HiveForm handles the big picture.</p>
+    </td>
+    <td align="center" valign="top" width="50%">
+      <br/>
+      <strong>🎯 Intelligent Code Generation</strong>
+      <p align="left">At build time, HiveForm analyzes fields inside your <code>&lt;HiveForm&gt;</code> components to automatically generate type-safe form schemas, types, and configurations.</p>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top" width="50%">
+      <br/>
+      <strong>⚡️ Performance-Optimized</strong>
+      <p align="left">Only the fields that change are re-rendered. We prevent unnecessary renders from the start using built-in memoization and subscription-based state management.</p>
+    </td>
+    <td align="center" valign="top" width="50%">
+      <br/>
+      <strong>🛡️ Powerful Type Safety & Validation</strong>
+      <p align="left">Enjoy first-class support for popular validation libraries like Zod, Yup, and Joi. Our auto-generated types enhance the development experience and eliminate bugs.</p>
+    </td>
+  </tr>
+</table>
+
+---
 
 ## 🏗️ Architecture
 
+HiveForm features a unique architecture that combines the power of build-time analysis with a flexible runtime.
+
 ```
-packages/
-├── hiveform/              # Core library
-│   ├── src/
-│   │   ├── components/    # Atomic form components
-│   │   ├── hooks/         # Form state management
-│   │   ├── context/       # Form context providers
-│   │   ├── validators/    # Validation integrations
-│   │   └── types/         # TypeScript definitions
-│   └── dist/              # Built library
-│
-apps/
-└── example-app/           # Demo application
-    └── src/
-        ├── forms/         # Example form implementations
-        └── components/    # Demo components
+┌────────── Build Time ──────────┐        ┌────────── Runtime ───────────┐
+│                                │        │                            │
+│   [ts-morph] AST Parser        │        │   [React] Atomic Components  │
+│   - Detects HiveForm scope     │───▶    │   - HiveForm, Field        │
+│   - Extracts field props       │        │   - Auto-generated types   │
+│   - Analyzes context attr      │        │                            │
+│                                │        │                            │
+└───────────────┬──────────────┘        └─────────────┬────────────┘
+                │                                      │
+                ▼                                      ▼
+┌──────── Code Generation ───────┐        ┌─────── RSBuild Plugin ───────┐
+│                                │        │                            │
+│   - Generates TypeScript types │        │   [onBeforeBuild] Production │
+│   - Generates Zod schemas      │        │   [onDevCompileDone] Dev Mode│
+│   - Generates default values   │        │   - File watching          │
+│   - Generates form configs     │        │   - Real-time updates      │
+│                                │        │                            │
+└────────────────────────────────┘        └────────────────────────────┘
 ```
 
-## 🚀 Quick Start
+### Key Components
 
-### Prerequisites
+- **🔍 AST Parser**: Uses `ts-morph` to analyze your source code and find `HiveForm` components
+- **⚡ RSBuild Plugin**: Integrates with your build process for seamless code generation
+- **🧬 Code Generator**: Creates type-safe form definitions with Zod validation
+- **🔄 Real-time Updates**: Automatically regenerates forms when you modify fields in development
 
-- **Bun** >= 1.2.17
-- **React** >= 18.0.0
-- **TypeScript** >= 5.0.0
+---
+
+## 🚀 Getting Started
 
 ### Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/hive-form.git
+git clone https://github.com/TylerShin/hive-form.git
 cd hive-form
 
 # Install dependencies
 bun install
+```
 
-# Start development
+### Run Development Mode
+
+```bash
+# Build the library and run the example app
 bun dev
 ```
 
-This will:
-1. Build the `hiveform` library in watch mode
-2. Start the example app at `http://localhost:3000`
-3. Enable hot-reload for both library and app
+This command starts the `packages/hiveform` library in watch mode and serves the `apps/example-app` on `http://localhost:3000`. Any changes to the library code will be hot-reloaded in the demo app.
+
+---
 
 ## 💡 Usage Example
 
-### Basic Form Setup
+### 1. Setup the RSBuild Plugin
 
-```tsx
-import { FormProvider, useFormContext } from 'hiveform';
+First, add the HiveForm plugin to your RSBuild configuration.
 
-// 1. Define your form context
-function UserRegistrationForm() {
-  return (
-    <FormProvider name="userRegistration">
-      <UserNameField />
-      <EmailField />
-      <PasswordField />
-      <SubmitButton />
-    </FormProvider>
-  );
-}
+```ts
+// rsbuild.config.ts
+import { defineConfig } from '@rsbuild/core';
+import { pluginReact } from '@rsbuild/plugin-react';
+import { hiveFormPlugin } from 'hiveform/plugin';
 
-// 2. Create atomic field components
-function UserNameField() {
-  const { field, fieldState } = useFormContext('username');
-  
-  return (
-    <div>
-      <input
-        {...field}
-        placeholder="Username"
-        className={fieldState.error ? 'error' : ''}
-      />
-      {fieldState.error && <span>{fieldState.error.message}</span>}
-    </div>
-  );
-}
-
-// 3. HiveForm automatically generates the form schema!
-// Generated type: { username: string; email: string; password: string }
+export default defineConfig({
+  plugins: [
+    pluginReact(),
+    hiveFormPlugin({
+      debug: true, // Enable debug logging during development
+    }),
+  ],
+});
 ```
 
-### With Validation
+### 2. Define Your Form with Atomic Fields
+
+Create your form using the `HiveForm` container and individual `Field` components.
 
 ```tsx
-import { z } from 'zod';
-import { withValidation } from 'hiveform';
+// src/components/LoginForm.tsx
+import { HiveForm, Field } from 'hiveform';
 
-const userSchema = z.object({
-  username: z.string().min(3, 'Username must be at least 3 characters'),
-  email: z.string().email('Invalid email format'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+function LoginForm() {
+  return (
+    <HiveForm context="login">
+      <Field name="email" />
+      <Field name="password" />
+      <Field name="rememberMe" optional />
+    </HiveForm>
+  );
+}
+
+export default LoginForm;
+```
+
+### 3. Build and Get Auto-Generated Code
+
+When you build your project, HiveForm automatically generates type-safe form definitions:
+
+```bash
+bun run build
+# ✅ HiveForm: Generated src/form/login.tsx (3 fields)
+```
+
+The generated file includes everything you need:
+
+```ts
+// Auto-generated file: src/form/login.tsx
+/**
+ * ⚠️  WARNING: AUTO-GENERATED FILE
+ * 
+ * This file was automatically generated by 🐝 HiveForm.
+ * DO NOT EDIT this file manually as your changes will be overwritten.
+ * 
+ * Generated at: 2025-06-29T09:09:22.011Z
+ * 
+ * To modify this form:
+ * 1. Update your HiveForm component and Field components in your source code
+ * 2. The form will be automatically regenerated on next build/save
+ * 
+ * Learn more: https://github.com/TylerShin/hive-form
+ */
+
+import { z } from 'zod';
+
+export type LoginForm = {
+  email: string;
+  password: string;
+  rememberMe?: string; // Optional fields are automatically detected
+};
+
+export const loginSchema = z.object({
+  email: z.string(),
+  password: z.string(),
+  rememberMe: z.string().optional()
 });
 
-function ValidatedForm() {
+export const loginDefaultValues = {
+  email: '',
+  password: '',
+  rememberMe: ''
+};
+
+export const loginConfig = {
+  type: {} as LoginForm,
+  schema: loginSchema,
+  defaultValues: loginDefaultValues,
+  fields: [
+    { "name": "email", "optional": false },
+    { "name": "password", "optional": false },
+    { "name": "rememberMe", "optional": true }
+  ]
+};
+```
+
+### 4. Use the Generated Types in Your Form Logic
+
+Now you can import and use the auto-generated types and schemas:
+
+```tsx
+// src/components/LoginForm.tsx
+import { HiveForm, Field } from 'hiveform';
+import { loginSchema, loginDefaultValues, type LoginForm } from '../form/login';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+function LoginForm() {
+  const form = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: loginDefaultValues,
+  });
+
+  const onSubmit = (data: LoginForm) => {
+    console.log('Form data:', data);
+    // Handle form submission
+  };
+
   return (
-    <FormProvider 
-      name="userRegistration" 
-      validation={withValidation(userSchema)}
-    >
-      {/* Your fields here */}
-    </FormProvider>
+    <form onSubmit={form.handleSubmit(onSubmit)}>
+      <HiveForm context="login">
+        <Field name="email" />
+        <Field name="password" />
+        <Field name="rememberMe" optional />
+      </HiveForm>
+      <button type="submit">Login</button>
+    </form>
   );
 }
 ```
+
+### 5. Real-time Development Experience
+
+In development mode, HiveForm automatically regenerates forms when you modify fields:
+
+```bash
+bun run dev
+# 🎯 HiveForm: Updated 1 form contexts (1 files changed) in 15ms
+# ✅ HiveForm: Updated src/form/login.tsx (4 fields)
+```
+
+Add a new field and it's instantly available:
+
+```tsx
+<HiveForm context="login">
+  <Field name="email" />
+  <Field name="password" />
+  <Field name="rememberMe" optional />
+  <Field name="twoFactorCode" optional /> {/* 👈 New field added */}
+</HiveForm>
+```
+
+The form file is automatically updated with the new field type and schema!
+
+---
 
 ## 🛠️ Development
 
 ### Project Structure
 
-This is a **Turborepo** monorepo with the following packages:
+This is a **Turborepo** monorepo.
 
-- **`packages/hiveform`**: The core library built with **rslib**
-- **`apps/example-app`**: Demo application built with **rsbuild**
+- **`packages/hiveform`**: The core library, built with **rslib**.
+- **`apps/example-app`**: A demo application, built with **rsbuild**.
 
-### Available Scripts
+### Key Scripts
 
 ```bash
-# Development (starts both library and app)
-bun dev
-
-# Build all packages
-bun build
-
-# Preview production build
-bun preview
-
-# Run tests
-bun test
-
-# Lint and format with Biome
-bun lint              # Check linting issues
-bun lint:fix          # Fix linting issues
-bun format            # Check formatting
-bun format:fix        # Fix formatting
-bun check             # Check both linting and formatting
-bun check:fix         # Fix both linting and formatting
+bun dev          # Run dev mode (library + app)
+bun build        # Build all packages
+bun test         # Run tests
+bun check        # Lint and format with Biome
+bun check:fix    # Auto-fix all lint and format issues
 ```
 
-### Development Workflow
+---
 
-1. **Library Development**: Edit files in `packages/hiveform/src/`
-2. **Auto-rebuild**: Changes trigger automatic rebuild via `rslib --watch`
-3. **Hot Reload**: Example app automatically reflects library changes
-4. **Type Safety**: Full TypeScript support with instant feedback
+## 🗺️ Roadmap
 
-## 🎯 Roadmap
+- [✅] **Phase 1: Foundation (Weeks 1-4)**
+  - [x] Monorepo setup (Bun + Rslib)
+  - [x] Core type and interface design
+  - [x] Implement basic `Field` and `HiveForm` components
+  - [x] RSBuild plugin integration
+- [✅] **Phase 2: Atomic System (Weeks 5-8)**
+  - [x] Implement Field component with name/optional props
+  - [x] HiveForm container with context support
+  - [x] Build-time and real-time code generation
+  - [x] Auto-generated warning comments
+- [✅] **Phase 3: Build-Time Analysis (Weeks 9-12)**
+  - [x] Implement ts-morph based AST parser
+  - [x] Auto-detect `HiveForm` scope and context
+  - [x] Extract and analyze field information
+  - [x] Auto-generate TypeScript type definitions
+  - [x] Auto-generate Zod schemas and default values
+- [🚧] **Phase 4: Enhanced Features (Weeks 13-16)**
+  - [ ] Advanced field types (select, checkbox, radio, etc.)
+  - [ ] Custom validation rules integration
+  - [ ] Form state management (dirty, touched, errors)
+  - [ ] Performance optimizations and memoization
+  - [ ] Comprehensive documentation and examples
 
-### Phase 1: Foundation ✅
-- [x] Monorepo setup with Turborepo
-- [x] Core library structure
-- [x] Basic component architecture
-- [x] Development workflow
-
-### Phase 2: Core Features 🚧
-- [ ] Form context provider
-- [ ] Field discovery system
-- [ ] Auto-generation pipeline
-- [ ] Basic validation integration
-
-### Phase 3: Advanced Features 📋
-- [ ] Zod/Yup/Joi validation adapters
-- [ ] State management (dirty, touched, pristine)
-- [ ] Performance optimizations
-- [ ] Field-level memoization
-
-### Phase 4: Developer Experience 📋
-- [ ] Build-time code generation
-- [ ] TypeScript plugin
-- [ ] DevTools integration
-- [ ] Comprehensive documentation
+---
 
 ## 🤝 Contributing
-Welcome.
 
-### Commit Convention
-
-We use semantic commit messages:
+Contributions are welcome! Please feel free to create an issue or submit a pull request. We follow the Semantic Commit Convention for commit messages.
 
 ```
-feat: add new form validation feature
-fix: resolve field re-rendering issue
-docs: update API documentation
-refactor: optimize form state management
-test: add validation test cases
+feat: Add new validation feature
+fix: Resolve field re-rendering issue
+docs: Update API documentation
+refactor: Optimize form state management
 ```
-
 
 
