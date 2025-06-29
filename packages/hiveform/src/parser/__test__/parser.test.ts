@@ -34,6 +34,10 @@ describe('parser', () => {
     const forms = findFieldsInHiveForm(filePath);
     const result = generateTypeDefinitions(forms);
 
+    console.log('--- Generated Type Definitions for TestComponentForParser.tsx ---');
+    console.log(result);
+    console.log('-------------------------------------------------------------------');
+
     const expectedInterfaces =
       'export interface UserProfileForm {\n  username: string;\n  email: string;\n  nested.field: string;\n}\n\n' +
       'export interface HiveForm1Form {\n  address: string;\n}\n\n' +
