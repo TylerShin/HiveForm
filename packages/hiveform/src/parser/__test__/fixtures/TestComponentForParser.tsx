@@ -1,10 +1,5 @@
-import type React from 'react';
-
-declare const Field: React.FC<{ name: string }>;
-declare const HiveForm: React.FC<{
-  children: React.ReactNode;
-  context?: string;
-}>;
+import { Field } from '../../../components/Field';
+import { HiveForm } from '../../../components/HiveForm';
 
 const NestedComponent = () => (
   <div>

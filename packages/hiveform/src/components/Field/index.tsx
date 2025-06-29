@@ -1,11 +1,11 @@
+import type React from 'react';
 
-import React from 'react';
-
-export interface FieldProps {
+export type Props = {
   name: string;
-  // validator, etc. will be added later
-}
+  context?: string;
+  optional?: boolean;
+};
 
-export const Field: React.FC<FieldProps> = () => {
-  return null; // This component is for static analysis and doesn't render anything itself.
+export const Field: React.FC<React.PropsWithChildren<Props>> = ({ children }) => {
+  return <>{children}</>;
 };

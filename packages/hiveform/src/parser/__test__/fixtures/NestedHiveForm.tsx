@@ -1,8 +1,5 @@
-import type React from 'react';
-
-// These are dummy declarations for the sake of the parser test
-declare const HiveForm: React.FC<{ children: React.ReactNode; context?: string }>;
-declare const Field: React.FC<{ name: string; context?: string }>;
+import { Field } from '../../../components/Field';
+import { HiveForm } from '../../../components/HiveForm';
 
 const NestedHiveForm = () => {
   return (

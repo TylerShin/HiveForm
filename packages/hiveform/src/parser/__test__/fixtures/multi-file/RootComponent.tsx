@@ -1,10 +1,7 @@
-import type React from 'react';
+import { Field } from '../../../../components/Field';
+import { HiveForm } from '../../../../components/HiveForm';
 import { AddressFields } from './AddressFields';
 import { UserFields } from './UserFields';
-
-// These are dummy declarations for the sake of the parser test
-declare const HiveForm: React.FC<{ children: React.ReactNode; context?: string }>;
-declare const Field: React.FC<{ name: string }>;
 
 const RootComponent = () => {
   return (
