@@ -49,7 +49,15 @@ export function getAttributeValue(
 ): string | undefined {
   const attribute = element.getAttribute(attributeName);
   if (attribute?.isKind(SyntaxKind.JsxAttribute)) {
-    return attribute.getInitializer()?.asKind(SyntaxKind.StringLiteral)?.getLiteralValue();
+    const initializer = attribute.getInitializer();
+    if (!initializer) {
+      // Boolean attribute without value (e.g., <Field optional />)
+      return 'true';
+    }
+    return (
+      initializer.asKind(SyntaxKind.StringLiteral)?.getLiteralValue() ||
+      initializer.asKind(SyntaxKind.JsxExpression)?.getExpression()?.getText()
+    );
   }
   return undefined;
 }

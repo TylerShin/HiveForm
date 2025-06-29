@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { findFieldsInHiveForm, generateTypeDefinitions } from '../parser';
 
 describe('parser', () => {
-  it('should group fields by their HiveForm context', async () => {
+  it('should group fields by their HiveForm context with optional information', async () => {
     const filePath = path.resolve(__dirname, 'fixtures/TestComponentForParser.tsx');
     const forms = findFieldsInHiveForm(filePath);
 
@@ -14,26 +14,48 @@ describe('parser', () => {
     expect(forms).toHaveProperty('userProfile');
     expect(forms).toHaveProperty('HiveForm1');
     expect(forms).toHaveProperty('HiveForm2');
-    expect(forms.userProfile).toEqual(
+
+    // Check userProfile fields
+    const userProfileFields = forms.userProfile.map(f => f.name);
+    expect(userProfileFields).toEqual(
       expect.arrayContaining(['username', 'email', 'nested.field'])
     );
-    expect(forms.HiveForm1).toEqual(['address']);
-    expect(forms.HiveForm2).toEqual(['phoneNumber']);
+
+    // Check optional properties
+    const emailField = forms.userProfile.find(f => f.name === 'email');
+    const usernameField = forms.userProfile.find(f => f.name === 'username');
+    const nestedField = forms.userProfile.find(f => f.name === 'nested.field');
+
+    expect(emailField?.optional).toBe(true);
+    expect(usernameField?.optional).toBe(false);
+    expect(nestedField?.optional).toBe(true);
+
+    // Check other forms
+    expect(forms.HiveForm1[0].name).toBe('address');
+    expect(forms.HiveForm1[0].optional).toBe(false);
+    expect(forms.HiveForm2[0].name).toBe('phoneNumber');
+    expect(forms.HiveForm2[0].optional).toBe(true);
   });
 
-  it('should generate multiple TypeScript interface definitions from contexts', () => {
+  it('should generate multiple TypeScript type definitions from contexts', () => {
     const forms = {
-      userProfile: ['username', 'email'],
-      settings: ['theme', 'language'],
+      userProfile: [
+        { name: 'username', optional: false },
+        { name: 'email', optional: true },
+      ],
+      settings: [
+        { name: 'theme', optional: false },
+        { name: 'language', optional: true },
+      ],
     };
-    const expectedInterfaces =
-      'export interface UserProfileForm {\n  username: string;\n  email: string;\n}\n\n' +
-      'export interface SettingsForm {\n  theme: string;\n  language: string;\n}';
+    const expectedTypes =
+      'export type UserProfileForm = {\n  username: string;\n  email?: string;\n};\n\n' +
+      'export type SettingsForm = {\n  theme: string;\n  language?: string;\n};';
     const result = generateTypeDefinitions(forms);
-    expect(result).toBe(expectedInterfaces);
+    expect(result).toBe(expectedTypes);
   });
 
-  it('should generate interfaces from a parsed component with contexts', async () => {
+  it('should generate type definitions from a parsed component with contexts and optional fields', async () => {
     const filePath = path.resolve(__dirname, 'fixtures/TestComponentForParser.tsx');
     const forms = findFieldsInHiveForm(filePath);
     const result = generateTypeDefinitions(forms);
@@ -47,11 +69,14 @@ describe('parser', () => {
     delete filteredForms.OrphanFields;
     const filteredResult = generateTypeDefinitions(filteredForms);
 
-    const expectedInterfaces =
-      'export interface UserProfileForm {\n  username: string;\n  email: string;\n  nested.field: string;\n}\n\n' +
-      'export interface HiveForm1Form {\n  address: string;\n}\n\n' +
-      'export interface HiveForm2Form {\n  phoneNumber: string;\n}';
-    expect(filteredResult).toBe(expectedInterfaces);
+    expect(filteredResult).toContain('export type UserProfileForm = {');
+    expect(filteredResult).toContain('username: string;');
+    expect(filteredResult).toContain('email?: string;');
+    expect(filteredResult).toContain('nested.field?: string;');
+    expect(filteredResult).toContain('export type HiveForm1Form = {');
+    expect(filteredResult).toContain('address: string;');
+    expect(filteredResult).toContain('export type HiveForm2Form = {');
+    expect(filteredResult).toContain('phoneNumber?: string;');
   });
 
   it('should find fields across multiple files with context', async () => {
@@ -60,8 +85,38 @@ describe('parser', () => {
 
     expect(forms).toHaveProperty('multiFileForm');
     expect(forms.multiFileForm).toHaveLength(5);
-    expect(forms.multiFileForm).toEqual(
+    const fieldNames = forms.multiFileForm.map(f => f.name);
+    expect(fieldNames).toEqual(
       expect.arrayContaining(['username', 'email', 'address', 'consent', 'preferences'])
     );
+  });
+
+  it('should handle nested HiveForm with Field context resolution', async () => {
+    const filePath = path.resolve(__dirname, 'fixtures/NestedHiveForm.tsx');
+    const forms = findFieldsInHiveForm(filePath);
+    const result = generateTypeDefinitions(forms);
+
+    console.log('--- Generated Type Definitions for NestedHiveForm.tsx ---');
+    console.log(result);
+    console.log('-------------------------------------------------------');
+
+    // outerForm should contain: outerField1, outerField2, fieldForOuter, explicitOuter
+    expect(forms).toHaveProperty('outerForm');
+    const outerFormFieldNames = forms.outerForm.map(f => f.name);
+    expect(outerFormFieldNames).toEqual(
+      expect.arrayContaining(['outerField1', 'outerField2', 'fieldForOuter', 'explicitOuter'])
+    );
+
+    // innerForm should contain: innerField1, innerField2
+    expect(forms).toHaveProperty('innerForm');
+    const innerFormFieldNames = forms.innerForm.map(f => f.name);
+    expect(innerFormFieldNames).toEqual(expect.arrayContaining(['innerField1', 'innerField2']));
+
+    // Anonymous HiveForm should contain: anonymousField
+    const anonymousFormKey = Object.keys(forms).find(
+      key => key.startsWith('HiveForm') && forms[key].some(f => f.name === 'anonymousField')
+    );
+    expect(anonymousFormKey).toBeDefined();
+    expect(forms[anonymousFormKey!][0].name).toBe('anonymousField');
   });
 });

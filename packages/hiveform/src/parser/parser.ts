@@ -2,10 +2,15 @@ import { pascalCase } from 'es-toolkit';
 import { type Node, Project, SyntaxKind } from 'ts-morph';
 import { findJsxTagElements, getAttributeValue } from './utils/jsxUtils';
 
+type FieldInfo = {
+  name: string;
+  optional: boolean;
+};
+
 function processNodeWithContext(
   node: Node,
   currentContext: string | null,
-  forms: Record<string, string[]>,
+  forms: Record<string, FieldInfo[]>,
   anonymousContextMap: Map<Node, string>,
   project: Project,
   visitedComponents: Set<string>
@@ -42,6 +47,10 @@ function processNodeWithContext(
       node.isKind(SyntaxKind.JsxElement) ? node.getOpeningElement() : node,
       'context'
     );
+    const optionalValue = getAttributeValue(
+      node.isKind(SyntaxKind.JsxElement) ? node.getOpeningElement() : node,
+      'optional'
+    );
 
     if (nameValue) {
       let targetContext: string;
@@ -57,7 +66,9 @@ function processNodeWithContext(
       if (!forms[targetContext]) {
         forms[targetContext] = [];
       }
-      forms[targetContext].push(nameValue);
+
+      const isOptional = optionalValue === 'true' || optionalValue === '{true}';
+      forms[targetContext].push({ name: nameValue, optional: isOptional });
     }
   }
 
@@ -103,7 +114,7 @@ function processNodeWithContext(
   });
 }
 
-export function findFieldsInHiveForm(filePath: string): Record<string, string[]> {
+export function findFieldsInHiveForm(filePath: string): Record<string, FieldInfo[]> {
   const project = new Project({
     compilerOptions: {
       jsx: 4, // JsxEmit.ReactJSX
@@ -113,7 +124,7 @@ export function findFieldsInHiveForm(filePath: string): Record<string, string[]>
   const sourceFile = project.addSourceFileAtPath(filePath);
   project.resolveSourceFileDependencies();
 
-  const forms: Record<string, string[]> = {};
+  const forms: Record<string, FieldInfo[]> = {};
   let anonymousFormCounter = 1;
   const anonymousContextMap = new Map<Node, string>();
 
@@ -138,18 +149,33 @@ export function findFieldsInHiveForm(filePath: string): Record<string, string[]>
 
   // Deduplicate fields within each context
   for (const context in forms) {
-    forms[context] = [...new Set(forms[context])];
+    const uniqueFields = new Map<string, FieldInfo>();
+    for (const field of forms[context]) {
+      if (!uniqueFields.has(field.name)) {
+        uniqueFields.set(field.name, field);
+      } else {
+        // If field exists, keep the one that's more permissive (optional if any is optional)
+        const existing = uniqueFields.get(field.name)!;
+        uniqueFields.set(field.name, {
+          name: field.name,
+          optional: existing.optional || field.optional,
+        });
+      }
+    }
+    forms[context] = Array.from(uniqueFields.values());
   }
 
   return forms;
 }
 
-export function generateTypeDefinitions(forms: Record<string, string[]>): string {
+export function generateTypeDefinitions(forms: Record<string, FieldInfo[]>): string {
   let typeDefinitions = '';
   for (const context in forms) {
-    const interfaceName = `${pascalCase(context)}Form`;
-    const properties = forms[context].map(field => `  ${field}: string;`).join('\n');
-    typeDefinitions += `export interface ${interfaceName} {\n${properties}\n}\n\n`;
+    const typeName = `${pascalCase(context)}Form`;
+    const properties = forms[context]
+      .map(field => `  ${field.name}${field.optional ? '?' : ''}: string;`)
+      .join('\n');
+    typeDefinitions += `export type ${typeName} = {\n${properties}\n};\n\n`;
   }
   return typeDefinitions.trim();
 }
