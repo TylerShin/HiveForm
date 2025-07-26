@@ -15,9 +15,10 @@
     "check:fix": "biome check --write ."
   },
   "dependencies": {
-    "react": "^19.1.0",
     "hiveform": "workspace:*",
-    "react-dom": "^19.1.0"
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "zod": "^4.0.10"
   },
   "devDependencies": {
     "@rsbuild/core": "^1.4.0",
